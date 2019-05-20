@@ -38,6 +38,6 @@ details about assignments of cs231n.
 - [ ] Q5: Generative Adversarial Networks --> GANS-TensorFlow.ipynb/GANS-PyTorch.ipynb
 
 
-Reference repoitory:
+### Reference repoitory:
 1. https://github.com/lightaime/cs231n
 2. https://github.com/yunjey/cs231n
