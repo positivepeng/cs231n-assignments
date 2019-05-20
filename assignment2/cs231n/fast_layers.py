@@ -7,7 +7,7 @@ except ImportError:
     print('run the following from the cs231n directory and try again:')
     print('python setup.py build_ext --inplace')
     print('You may also need to restart your iPython kernel')
-
+    
 from cs231n.im2col import *
 
 

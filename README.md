@@ -18,9 +18,9 @@ details about assignments of cs231n.
 
 - [x] Q2: Batch Normalization --> BatchNormalization.ipynb
 
-- [ ] Q3: Dropout --> Dropout.ipynb 
+- [x] Q3: Dropout --> Dropout.ipynb 
 
-- [ ] Q4: Convolutional Networks --> ConvolutionalNetworks.ipynb 
+- [x] Q4: Convolutional Networks --> ConvolutionalNetworks.ipynb 
 
 - [ ] Q5: PyTorch/TensorFlow on CIFAR-10 -- > PyTorch.ipynb/TensorFlow.ipynb. 
 
@@ -36,3 +36,8 @@ details about assignments of cs231n.
 - [ ] Q4: Style Transfer --> StyleTransfer-TensorFlow.ipynb/StyleTransfer-PyTorch.ipynb 
 
 - [ ] Q5: Generative Adversarial Networks --> GANS-TensorFlow.ipynb/GANS-PyTorch.ipynb
+
+
+Reference repoitory:
+1. https://github.com/lightaime/cs231n
+2. https://github.com/yunjey/cs231n
