@@ -1,5 +1,5 @@
 # cs231n-assignments
-Assignments of cs231n.
+details about assignments of cs231n.
 
 ### Assignment1 : k-Nearest Neighbor ,the SVM/Softmax classifier
 - [x] Q1: k-Nearest Neighbor classifier --> knn.ipynb

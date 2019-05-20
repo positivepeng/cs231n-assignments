@@ -284,14 +284,20 @@ class FullyConnectedNet(object):
         else:
             h, cache['h1'] = affine_relu_forward(X, self.params['W1'], self.params['b1'])
 
+        if self.use_dropout:
+            h, cache["dropout1"] = dropout_forward(h, self.dropout_param)
+
         # (2) forward prop: hidden-to-hidden
         for i in range(self.num_layers - 2):
-            if self.use_batchnorm:
+            if self.use_batchnorm:                      #这一步h不用存下来
                 #h, cache['h%d' %(i+2)] = affine_relu_forward(h, self.params['W%d' %(i+2)], self.params['b%d' %(i+2)])    
                 h,cache["h%d" % (i+2)] = affine_batchnorm_relu_forward(h, self.params['W%d' %(i+2)], self.params['b%d' %(i+2)], self.params['gamma%d' %(i+2)], self.params['beta%d' %(i+2)]);
             else:
                 h, cache['h%d' %(i+2)] = affine_relu_forward(h, self.params['W%d' %(i+2)], self.params['b%d' %(i+2)])    
-            #这一步h不用存下来
+                
+            if self.use_dropout:
+                h, cache["dropout%d" % (i+2)] = dropout_forward(h, self.dropout_param)
+            
 
         # (3) forward prop: hidden-to-out
         scores, cache['out'] = affine_forward(h, self.params['W%d' %(self.num_layers)], self.params['b%d' %(self.num_layers)])
@@ -324,9 +330,11 @@ class FullyConnectedNet(object):
 
         # (2) backprop: out-to-hidden
         dh, grads['W%d' %(self.num_layers)], grads['b%d' %(self.num_layers)] = affine_backward(dout, cache['out'])
-
+        
         # (3) backprop: hidden-to-hidden 
         for i in reversed(range(self.num_layers - 1)):
+            if self.use_dropout:
+                dh = dropout_backward(dh, cache["dropout%d"%(i+1)])
             if self.use_batchnorm:
                 dh ,grads['W%d' %(i+1)], grads['b%d' %(i+1)], grads['gamma%d' %(i+1)],grads['beta%d' %(i+1)] = affine_batchnorm_relu_backward(dh, cache['h%d' %(i+1)])
             else:
