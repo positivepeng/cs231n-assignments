@@ -58,9 +58,11 @@ def image_from_url(url):
     Read an image from a URL. Returns a numpy array with the pixel data.
     We write the image to a temporary file then read it back. Kinda gross.
     """
+    print(url)
     try:
         f = urllib.request.urlopen(url)
-        _, fname = tempfile.mkstemp()
+        #_, fname = tempfile.mkstemp()
+        fname = url.split("/")[-1]
         with open(fname, 'wb') as ff:
             ff.write(f.read())
         img = imread(fname)
