@@ -49,15 +49,18 @@ class CaptioningRNN(object):
         self._end = word_to_idx.get('<END>', None)
 
         # Initialize word vectors
+        # 每个单词对应一个wordvec_dim维的向量
         self.params['W_embed'] = np.random.randn(vocab_size, wordvec_dim)
         self.params['W_embed'] /= 100
 
         # Initialize CNN -> hidden state projection parameters
+        # 将输入的维数转换为hidden_dim,然后将其作为h0，开始RNN
         self.params['W_proj'] = np.random.randn(input_dim, hidden_dim)
         self.params['W_proj'] /= np.sqrt(input_dim)
         self.params['b_proj'] = np.zeros(hidden_dim)
 
         # Initialize parameters for the RNN
+        # 初始化RNN的参数
         dim_mul = {'lstm': 4, 'rnn': 1}[cell_type]
         self.params['Wx'] = np.random.randn(wordvec_dim, dim_mul * hidden_dim)
         self.params['Wx'] /= np.sqrt(wordvec_dim)
@@ -66,6 +69,8 @@ class CaptioningRNN(object):
         self.params['b'] = np.zeros(dim_mul * hidden_dim)
 
         # Initialize output to vocab weights
+        # 将RNN的输出h（NxTxH）转换为（NxTxV）
+        # 最后一维每个向量有V维，代表V个单词每个单词的相对概率大小
         self.params['W_vocab'] = np.random.randn(hidden_dim, vocab_size)
         self.params['W_vocab'] /= np.sqrt(hidden_dim)
         self.params['b_vocab'] = np.zeros(vocab_size)
@@ -104,15 +109,19 @@ class CaptioningRNN(object):
 
         # Weight and bias for the affine transform from image features to initial
         # hidden state
+        # 将图像的特征输入维数转换为RNN的hidden_dim,然后输入到RNN中
         W_proj, b_proj = self.params['W_proj'], self.params['b_proj']
 
         # Word embedding matrix
+        # 每个单词对应一个wordvec_dim维的向量
         W_embed = self.params['W_embed']
 
         # Input-to-hidden, hidden-to-hidden, and biases for the RNN
         Wx, Wh, b = self.params['Wx'], self.params['Wh'], self.params['b']
 
         # Weight and bias for the hidden-to-vocab transformation.
+        # 将RNN的输出h（NxTxH）转换为（NxTxW）
+        # 最后一维每个向量有V维，代表V个单词每个单词的相对概率大小
         W_vocab, b_vocab = self.params['W_vocab'], self.params['b_vocab']
 
         loss, grads = 0.0, {}
@@ -142,7 +151,51 @@ class CaptioningRNN(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        # NxH
+        # 将图片中提取出的feature转换为和RNN hidden_layer维度相同的向量
+        features_to_h0, affine_cache = affine_forward(features, W_proj, b_proj)
+
+        # NxTxW
+        # 将输入的caption转换为word_embedding
+        captions_in_to_word_vector, word_embedding_cache = word_embedding_forward(captions_in, W_embed)
+
+        if self.cell_type == 'rnn':
+            # NxTxH
+            # 将word_embedding作为x，转换后的feature做h，输入到RNN中
+            rnn_hiddens, rnn_cache = rnn_forward(captions_in_to_word_vector, features_to_h0, Wx, Wh, b)
+        elif self.cell_type == 'lstm':
+            rnn_hiddens, rnn_cache = lstm_forward(captions_in_to_word_vector, features_to_h0, Wx, Wh, b)
+
+        # 将rnn的hidden的值转换为单词向量
+        rnn_hidden_to_vocab, temporal_affine_cache = temporal_affine_forward(rnn_hiddens, W_vocab, b_vocab)
+
+        # 计算单词向量和caption_out的softmax loss
+        loss, dx = temporal_softmax_loss(rnn_hidden_to_vocab, captions_out, mask)
+
+        # 误差反向传播
+        drnn_hidden_to_vocab = dx
+        drnn_hiddens, dW_vocab, db_vocab = temporal_affine_backward(drnn_hidden_to_vocab, temporal_affine_cache)
+
+        if self.cell_type == 'rnn':
+            dcaptions_in_to_word_vector, dfeatures_to_h0, dWx, dWh, db = rnn_backward(drnn_hiddens, rnn_cache)
+        elif self.cell_type == 'lstm':
+            dcaptions_in_to_word_vector, dfeatures_to_h0, dWx, dWh, db = lstm_backward(drnn_hiddens, rnn_cache)
+
+        dW_embed = word_embedding_backward(dcaptions_in_to_word_vector, word_embedding_cache)
+
+        dfeatures, dW_proj, db_proj = affine_backward(dfeatures_to_h0, affine_cache)
+
+        grads["W_proj"] = dW_proj
+        grads["b_proj"] = db_proj
+
+        grads["W_embed"] = dW_embed
+
+        grads["Wx"] = dWx
+        grads["Wh"] = dWh
+        grads["b"] = db
+
+        grads["W_vocab"] = dW_vocab
+        grads["b_vocab"] = db_vocab
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
@@ -211,10 +264,29 @@ class CaptioningRNN(object):
         ###########################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        N, D = features.shape
+        affine_out, _ = affine_forward(features, W_proj, b_proj)
+
+        prev_word_idx = [self._start]*N
+        prev_h = affine_out
+        prev_c = np.zeros(prev_h.shape)
+        captions[:,0] = self._start
+        for i in range(1,max_length):
+            prev_word_embed  = W_embed[prev_word_idx]
+            if self.cell_type == 'rnn':
+                next_h, rnn_step_cache = rnn_step_forward(prev_word_embed, prev_h, Wx, Wh, b)
+            elif self.cell_type == 'lstm':
+                next_h, next_c,lstm_step_cache = lstm_step_forward(prev_word_embed, prev_h, prev_c, Wx, Wh, b)
+                prev_c = next_c
+            else:
+                raise ValueError('Invalid cell_type "%s"' % self.cell_type)
+            vocab_affine_out, vocab_affine_out_cache = affine_forward(next_h, W_vocab, b_vocab)
+            captions[:,i] = list(np.argmax(vocab_affine_out, axis = 1))
+            prev_word_idx = captions[:,i]
+            prev_h = next_h
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
-        return captions
+        return captions  # N x max_length

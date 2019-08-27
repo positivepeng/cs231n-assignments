@@ -22,14 +22,14 @@ details about assignments of cs231n.
 
 - [x] Q4: Convolutional Networks --> ConvolutionalNetworks.ipynb 
 
-- [ ] Q5: PyTorch/TensorFlow on CIFAR-10 -- > PyTorch.ipynb/TensorFlow.ipynb. 
+- [x] Q5: PyTorch/TensorFlow on CIFAR-10 -- > PyTorch.ipynb/TensorFlow.ipynb. 
 
 
 ### Assignment3 : recurrent networks for image captioning on Microsoft COCO, visualizing the features of a pretrained model on ImageNet, Style Transfer, Generative Adversarial Network to generate images.
 
-- [ ] Q1: Image Captioning with Vanilla RNNs --> RNN_Captioning.ipynb 
+- [x] Q1: Image Captioning with Vanilla RNNs --> RNN_Captioning.ipynb 
 
-- [ ] Q2: Image Captioning with LSTMs --> LSTM_Captioning.ipynb 
+- [x] Q2: Image Captioning with LSTMs --> LSTM_Captioning.ipynb 
 
 - [ ] Q3: Network Visualization: Saliency maps, Class Visualization, and Fooling Images (15 points) --> NetworkVisualization-TensorFlow.ipynb /NetworkVisualization-PyTorch.ipynb 
 
