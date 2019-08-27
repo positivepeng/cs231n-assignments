@@ -31,7 +31,7 @@ details about assignments of cs231n.
 
 - [x] Q2: Image Captioning with LSTMs --> LSTM_Captioning.ipynb 
 
-- [ ] Q3: Network Visualization: Saliency maps, Class Visualization, and Fooling Images (15 points) --> NetworkVisualization-TensorFlow.ipynb /NetworkVisualization-PyTorch.ipynb 
+- [ ] Q3: Network Visualization: Saliency maps, Class Visualization, and Fooling Images --> NetworkVisualization-TensorFlow.ipynb /NetworkVisualization-PyTorch.ipynb 
 
 - [ ] Q4: Style Transfer --> StyleTransfer-TensorFlow.ipynb/StyleTransfer-PyTorch.ipynb 
 
